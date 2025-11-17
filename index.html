@@ -31,10 +31,15 @@
     const playBtn = document.getElementById("playBtn");
 
     function playChannel(url) {
-      // สร้าง URL proxy
       const proxyUrl = `/proxy?url=${encodeURIComponent(url)}&ua=Mozilla/5.0&referer=${encodeURIComponent("https://dookeela2.live/")}`;
       player.src = proxyUrl;
-      player.play().catch(err => console.error("Play error:", err));
+
+      console.log(`[PLAYER] กำลังเล่นช่อง: ${url}`);
+      player.play().then(() => {
+        console.log(`[PLAYER] เล่นสำเร็จ: ${url}`);
+      }).catch(err => {
+        console.error(`[PLAYER] เล่นล้มเหลว: ${url}`, err);
+      });
     }
 
     playBtn.addEventListener("click", () => {
@@ -45,6 +50,11 @@
     // เล่นช่องแรกอัตโนมัติ
     window.addEventListener("load", () => {
       playChannel(channelSelect.value);
+    });
+
+    // เพิ่ม listener เพื่อตรวจว่า video error
+    player.addEventListener("error", (e) => {
+      console.error("[PLAYER] Video error", e);
     });
   </script>
 </body>
