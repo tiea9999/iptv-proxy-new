@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IPTV Proxy Player</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    video {
+      width: 90%;
+      max-width: 800px;
+      margin: 20px auto;
+      border-radius: 10px;
+      background: #000;
+    }
+    select {
+      font-size: 16px;
+      padding: 5px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>IPTV Proxy Player</h1>
+
+  <select id="channelSelect">
+    <option value="">-- เลือกช่อง --</option>
+    <option value="https://iptv-proxy-new.onrender.com/proxy?url=https://dookeela2.live/live-tv/warnertv&ua=Mozilla/5.0&referer=https://dookeela2.live/">Warner TV</option>
+    <option value="https://iptv-proxy-new.onrender.com/proxy?url=https://dookeela2.live/live-tv/truemoviehits&ua=Mozilla/5.0&referer=https://dookeela2.live/">True Movie Hits</option>
+    <option value="https://iptv-proxy-new.onrender.com/proxy?url=https://dookeela2.live/live-tv/trueasianmore&ua=Mozilla/5.0&referer=https://dookeela2.live/">True Asian More</option>
+    <option value="https://iptv-proxy-new.onrender.com/proxy?url=https://dookeela2.live/live-tv/monomax1&ua=Mozilla/5.0&referer=https://dookeela2.live/">MonoMax 1</option>
+  </select>
+
+  <video id="video" controls autoplay></video>
+
+  <script>
+    const video = document.getElementById('video');
+    const select = document.getElementById('channelSelect');
+
+    function playHLS(url) {
+      if (!url) return;
+
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, function() {
+          video.play();
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = url;
+        video.addEventListener('loadedmetadata', () => video.play());
+      }
+    }
+
+    select.addEventListener('change', () => {
+      const url = select.value;
+      playHLS(url);
+    });
+  </script>
+</body>
+</html>
