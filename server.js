@@ -24,12 +24,13 @@ app.get("/proxy", async (req, res) => {
     await page.setUserAgent(ua);
     await page.setExtraHTTPHeaders({ Referer: referer });
 
-    // intercept network response
     let targetM3U8 = null;
+
+    // intercept network response
     page.on("response", async (response) => {
       const requestUrl = response.url();
       if (requestUrl.endsWith(".m3u8")) {
-        targetM3U8 = requestUrl; // capture the real m3u8 URL
+        targetM3U8 = requestUrl; // capture real m3u8 URL
       }
     });
 
@@ -51,6 +52,7 @@ app.get("/proxy", async (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
+
 
 
 
