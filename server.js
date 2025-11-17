@@ -2,16 +2,14 @@ import express from "express";
 import puppeteer from "puppeteer";
 
 const app = express();
-
-// ให้ Render detect port
 const PORT = process.env.PORT || 10000;
 
-// ตัวอย่าง route หน้าแรก
+// หน้าแรกแสดงสถานะ server
 app.get("/", (req, res) => {
   res.send("IPTV Proxy Server is running!");
 });
 
-// ตัวอย่าง route proxy สำหรับ m3u8
+// ตัวอย่าง proxy สำหรับ m3u8
 app.get("/proxy", async (req, res) => {
   const url = req.query.url;
   if (!url) return res.status(400).send("Missing url parameter");
@@ -21,9 +19,11 @@ app.get("/proxy", async (req, res) => {
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
     const page = await browser.newPage();
+
+    // ไปยัง URL ที่ส่งมา
     await page.goto(url, { waitUntil: "networkidle2" });
 
-    // ดึง content แบบง่าย (คุณสามารถปรับให้ fetch m3u8 ตามต้องการ)
+    // ดึง content ของหน้า (ปรับได้ตามต้องการ)
     const content = await page.content();
 
     await browser.close();
