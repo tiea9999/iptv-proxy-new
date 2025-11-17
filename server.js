@@ -1,13 +1,18 @@
 import express from "express";
 import puppeteer from "puppeteer";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-app.get("/", (req, res) => {
-  res.send("IPTV HLS Proxy is running!");
-});
+// serve index.html
+app.use(express.static(__dirname));
 
+// proxy endpoint
 app.get("/proxy", async (req, res) => {
   const url = req.query.url;
   if (!url) return res.status(400).send("Missing url parameter");
@@ -37,9 +42,7 @@ app.get("/proxy", async (req, res) => {
     await page.goto(url, { waitUntil: "networkidle2" });
     await browser.close();
 
-    if (!targetM3U8) {
-      return res.status(404).send("No m3u8 found");
-    }
+    if (!targetM3U8) return res.status(404).send("No m3u8 found");
 
     res.redirect(targetM3U8);
 
@@ -52,3 +55,4 @@ app.get("/proxy", async (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
+
