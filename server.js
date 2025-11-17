@@ -1,43 +1,41 @@
 import express from "express";
-import cors from "cors";
 import puppeteer from "puppeteer";
 
 const app = express();
-app.use(cors());
 
-const channelMap = {
-  warnertv: "https://dookeela2.live/live-tv/warnertv",
-  truemoviehits: "https://dookeela2.live/live-tv/truemoviehits",
-  trueasianmore: "https://dookeela2.live/live-tv/trueasianmore",
-  truefilmasia: "https://dookeela2.live/live-tv/truefilmasia",
-  monomax1: "https://dookeela2.live/live-tv/monomax1"
-};
+// ให้ Render detect port
+const PORT = process.env.PORT || 10000;
 
+// ตัวอย่าง route หน้าแรก
+app.get("/", (req, res) => {
+  res.send("IPTV Proxy Server is running!");
+});
+
+// ตัวอย่าง route proxy สำหรับ m3u8
 app.get("/proxy", async (req, res) => {
-  const channel = req.query.channel;
-  const pageUrl = channelMap[channel];
-  if (!pageUrl) return res.status(404).send("Channel not found");
+  const url = req.query.url;
+  if (!url) return res.status(400).send("Missing url parameter");
 
   try {
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
-
-    await page.setUserAgent("Mozilla/5.0");
-    await page.goto(pageUrl, { waitUntil: "networkidle2" });
-
-    const m3u8 = await page.evaluate(() => {
-      const vid = document.querySelector("video");
-      return vid?.src || null;
+    const browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
+    const page = await browser.newPage();
+    await page.goto(url, { waitUntil: "networkidle2" });
+
+    // ดึง content แบบง่าย (คุณสามารถปรับให้ fetch m3u8 ตามต้องการ)
+    const content = await page.content();
 
     await browser.close();
-
-    if (!m3u8) return res.status(500).send("m3u8 not found");
-
-    res.redirect(m3u8);
-
+    res.send(content);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error fetching stream");
+    res.status(500).send("Error fetching URL");
   }
 });
+
+// Start server
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
