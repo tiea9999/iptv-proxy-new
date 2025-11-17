@@ -1,33 +1,32 @@
 import express from "express";
-import puppeteer from "puppeteer";
+import fetch from "node-fetch";
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// หน้าแรกแสดงสถานะ server
+// หน้าแรกเช็กสถานะ server
 app.get("/", (req, res) => {
   res.send("IPTV Proxy Server is running!");
 });
 
-// ตัวอย่าง proxy สำหรับ m3u8
+// Proxy สำหรับ m3u8
 app.get("/proxy", async (req, res) => {
   const url = req.query.url;
   if (!url) return res.status(400).send("Missing url parameter");
 
   try {
-    const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-    const page = await browser.newPage();
+    // Optional: ตั้ง header เช่น user-agent, referer
+    const headers = {};
+    if (req.query.ua) headers['User-Agent'] = req.query.ua;
+    if (req.query.referer) headers['Referer'] = req.query.referer;
 
-    // ไปยัง URL ที่ส่งมา
-    await page.goto(url, { waitUntil: "networkidle2" });
+    const response = await fetch(url, { headers });
+    if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`);
 
-    // ดึง content ของหน้า (ปรับได้ตามต้องการ)
-    const content = await page.content();
+    const data = await response.text();
+    res.set("Content-Type", "application/vnd.apple.mpegurl");
+    res.send(data);
 
-    await browser.close();
-    res.send(content);
   } catch (err) {
     console.error(err);
     res.status(500).send("Error fetching URL");
@@ -38,4 +37,5 @@ app.get("/proxy", async (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
+
 
