@@ -1,5 +1,5 @@
 import express from "express";
-import puppeteer from "puppeteer";
+import fetch from "node-fetch"; // npm install node-fetch@3
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -16,7 +16,7 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// Proxy route สำหรับทุกช่อง
+// Proxy route แบบ direct fetch
 app.get("/proxy", async (req, res) => {
   const url = req.query.url;
   if (!url) return res.status(400).send("Missing url parameter");
@@ -28,42 +28,41 @@ app.get("/proxy", async (req, res) => {
   console.log(`[PROXY] UA: ${ua}, Referer: ${referer}`);
 
   try {
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"]
-    });
-    const page = await browser.newPage();
-    await page.setUserAgent(ua);
-    await page.setExtraHTTPHeaders({ Referer: referer });
-
-    let targetM3U8 = null;
-
-    page.on("response", async (response) => {
-      const rUrl = response.url();
-      if (rUrl.endsWith(".m3u8")) {
-        targetM3U8 = rUrl;
-        console.log(`[PROXY] Found m3u8: ${targetM3U8}`);
-      }
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": ua,
+        "Referer": referer
+      },
+      timeout: 30000 // 30s timeout
     });
 
-    // เปิดหน้า live + timeout 30s
-    await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
-    await browser.close();
-
-    if (!targetM3U8) {
-      console.warn(`[PROXY] No m3u8 found for ${url}`);
-      return res.status(404).send("No m3u8 found");
+    if (!response.ok) {
+      console.warn(`[PROXY] Fetch failed: ${response.status}`);
+      return res.status(response.status).send(`Fetch failed: ${response.status}`);
     }
 
-    // redirect ไปที่ไฟล์ .m3u8
-    res.redirect(targetM3U8);
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/vnd.apple.mpegurl")) {
+      // ถ้าเจอ m3u8 → redirect ไปเลย
+      res.redirect(url);
+    } else {
+      const text = await response.text();
+      if (text.includes(".m3u8")) {
+        // ตรวจหา .m3u8 link ใน body แล้ว redirect
+        const match = text.match(/https?:\/\/.*?\.m3u8/g);
+        if (match && match[0]) {
+          console.log(`[PROXY] Found m3u8: ${match[0]}`);
+          return res.redirect(match[0]);
+        }
+      }
+      res.status(404).send("No m3u8 found");
+    }
   } catch (err) {
     console.error(`[PROXY] Error fetching URL: ${url}`, err);
     res.status(500).send("Error fetching URL: " + err.message);
   }
 });
 
-// Start server
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
