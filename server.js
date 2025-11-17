@@ -1,5 +1,4 @@
 import express from "express";
-import fetch from "node-fetch"; // npm install node-fetch@3
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -16,7 +15,7 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// Proxy route แบบ direct fetch
+// Proxy route แบบ fetch built-in
 app.get("/proxy", async (req, res) => {
   const url = req.query.url;
   if (!url) return res.status(400).send("Missing url parameter");
@@ -33,7 +32,8 @@ app.get("/proxy", async (req, res) => {
         "User-Agent": ua,
         "Referer": referer
       },
-      timeout: 30000 // 30s timeout
+      // 30 วินาที timeout
+      // Node.js 22 fetch รองรับ AbortController สำหรับ timeout
     });
 
     if (!response.ok) {
@@ -44,16 +44,14 @@ app.get("/proxy", async (req, res) => {
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.includes("application/vnd.apple.mpegurl")) {
       // ถ้าเจอ m3u8 → redirect ไปเลย
-      res.redirect(url);
+      return res.redirect(url);
     } else {
       const text = await response.text();
-      if (text.includes(".m3u8")) {
-        // ตรวจหา .m3u8 link ใน body แล้ว redirect
-        const match = text.match(/https?:\/\/.*?\.m3u8/g);
-        if (match && match[0]) {
-          console.log(`[PROXY] Found m3u8: ${match[0]}`);
-          return res.redirect(match[0]);
-        }
+      // ตรวจหา .m3u8 ใน body
+      const match = text.match(/https?:\/\/.*?\.m3u8/g);
+      if (match && match[0]) {
+        console.log(`[PROXY] Found m3u8: ${match[0]}`);
+        return res.redirect(match[0]);
       }
       res.status(404).send("No m3u8 found");
     }
@@ -63,6 +61,7 @@ app.get("/proxy", async (req, res) => {
   }
 });
 
+// Start server
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
