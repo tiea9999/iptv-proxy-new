@@ -1,4 +1,9 @@
 
+
+
+
+
+
 import express from "express";
 import puppeteer from "puppeteer";
 
@@ -28,23 +33,4 @@ app.get("/proxy", async (req, res) => {
 
     let targetM3U8 = null;
 
-    page.on("response", async (response) => {
-      const requestUrl = response.url();
-      if (requestUrl.endsWith(".m3u8")) {
-        targetM3U8 = requestUrl; // capture real m3u8 URL
-      }
-    });
-
-    await page.goto(url, { waitUntil: "networkidle2" });
-
-    await browser.close();
-
-    if (!targetM3U8) return res.status(404).send("No m3u8 found");
-
-    // redirect client to real m3u8
-    res.redirect(ta
-
-
-
-
-
+    // intercept network response
