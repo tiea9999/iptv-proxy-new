@@ -9,21 +9,20 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// Serve index.html
+// Serve static HTML
 app.use(express.static(__dirname));
 
-// Proxy endpoint
 app.get("/proxy", async (req, res) => {
   const url = req.query.url;
   if (!url) return res.status(400).send("Missing url parameter");
 
   try {
-    const ua = req.query.ua || "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
+    const ua = req.query.ua || "Mozilla/5.0";
     const referer = req.query.referer || url;
 
-    // Launch Puppeteer with default Chromium
+    // Launch Puppeteer with bundled Chromium
     const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: ["--no-sandbox", "--disable-setuid-sandbox"]
     });
 
     const page = await browser.newPage();
@@ -33,10 +32,7 @@ app.get("/proxy", async (req, res) => {
     let targetM3U8 = null;
 
     page.on("response", async (response) => {
-      const requestUrl = response.url();
-      if (requestUrl.endsWith(".m3u8")) {
-        targetM3U8 = requestUrl;
-      }
+      if (response.url().endsWith(".m3u8")) targetM3U8 = response.url();
     });
 
     await page.goto(url, { waitUntil: "networkidle2" });
@@ -55,4 +51,5 @@ app.get("/proxy", async (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
+
 
