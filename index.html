@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>IPTV Proxy Player</title>
+  <title>IPTV Proxy Player - All Channels</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     body { font-family: sans-serif; background: #111; color: #fff; text-align: center; padding: 20px; }
@@ -11,13 +11,23 @@
   </style>
 </head>
 <body>
-  <h1>IPTV Proxy Player</h1>
+  <h1>IPTV Proxy Player - All Channels</h1>
+
   <select id="channelSelect">
     <option value="">-- เลือกช่อง --</option>
+
+    <!-- Warner / True / Mono -->
     <option value="https://iptv-proxy-new.onrender.com/proxy?url=https://dookeela2.live/live-tv/warnertv&ua=Mozilla/5.0&referer=https://dookeela2.live/">Warner TV</option>
     <option value="https://iptv-proxy-new.onrender.com/proxy?url=https://dookeela2.live/live-tv/truemoviehits&ua=Mozilla/5.0&referer=https://dookeela2.live/">True Movie Hits</option>
     <option value="https://iptv-proxy-new.onrender.com/proxy?url=https://dookeela2.live/live-tv/trueasianmore&ua=Mozilla/5.0&referer=https://dookeela2.live/">True Asian More</option>
+    <option value="https://iptv-proxy-new.onrender.com/proxy?url=https://dookeela2.live/live-tv/truefilmasia&ua=Mozilla/5.0&referer=https://dookeela2.live/">True Film Asia</option>
     <option value="https://iptv-proxy-new.onrender.com/proxy?url=https://dookeela2.live/live-tv/monomax1&ua=Mozilla/5.0&referer=https://dookeela2.live/">MonoMax 1</option>
+
+    <!-- HBO / Cinemax -->
+    <option value="https://iptv-proxy-new.onrender.com/proxy?url=https://dookeela2.live/live-tv/hbo&ua=Mozilla/5.0&referer=https://dookeela2.live/">HBO</option>
+    <option value="https://iptv-proxy-new.onrender.com/proxy?url=https://dookeela2.live/live-tv/cinemax&ua=Mozilla/5.0&referer=https://dookeela2.live/">Cinemax</option>
+    <option value="https://iptv-proxy-new.onrender.com/proxy?url=https://dookeela2.live/live-tv/hbofamily&ua=Mozilla/5.0&referer=https://dookeela2.live/">HBO Family</option>
+    <option value="https://iptv-proxy-new.onrender.com/proxy?url=https://dookeela2.live/live-tv/hbohits&ua=Mozilla/5.0&referer=https://dookeela2.live/">HBO Hits</option>
   </select>
 
   <video id="video" controls autoplay></video>
@@ -43,4 +53,5 @@
   </script>
 </body>
 </html>
+
 
