@@ -1,61 +1,70 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IPTV Proxy</title>
-  <style>
-    body { font-family: sans-serif; background: #f0f0f0; padding: 20px; }
-    select, button { font-size: 16px; padding: 8px; margin: 5px; }
-    video { width: 100%; max-width: 800px; margin-top: 20px; border: 1px solid #ccc; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPTV Proxy</title>
+<style>
+body { font-family: sans-serif; background: #f0f0f0; padding: 20px; }
+select, button { font-size: 16px; padding: 8px; margin: 5px; }
+video { width: 100%; max-width: 800px; margin-top: 20px; border: 1px solid #ccc; }
+</style>
 </head>
 <body>
-  <h1>IPTV Proxy Player</h1>
+<h1>IPTV Proxy Player</h1>
 
-  <label for="channel">เลือกช่อง:</label>
-  <select id="channel">
-    <option value="https://dookeela2.live/live-tv/hbo">HBO</option>
-    <option value="https://dookeela2.live/live-tv/cinemax">Cinemax</option>
-    <option value="https://dookeela2.live/live-tv/hbo-family">HBO Family</option>
-    <option value="https://dookeela2.live/live-tv/hbo-hits">HBO Hits</option>
-  </select>
+<label for="channel">เลือกช่อง:</label>
+<select id="channel">
+  <option value="">-- ยังไม่พบ m3u8 --</option>
+</select>
 
-  <button id="playBtn">เล่นช่อง</button>
+<button id="playBtn">เล่นช่อง</button>
 
-  <video id="player" controls autoplay muted></video>
+<video id="player" controls autoplay muted></video>
 
-  <script>
-    const player = document.getElementById("player");
-    const channelSelect = document.getElementById("channel");
-    const playBtn = document.getElementById("playBtn");
+<script>
+const player = document.getElementById("player");
+const channelSelect = document.getElementById("channel");
+const playBtn = document.getElementById("playBtn");
 
-    function playChannel(url) {
-      const proxyUrl = `/proxy?url=${encodeURIComponent(url)}&ua=Mozilla/5.0&referer=${encodeURIComponent("https://dookeela2.live/")}`;
-      player.src = proxyUrl;
-
-      console.log(`[PLAYER] กำลังเล่นช่อง: ${url}`);
-      player.play().then(() => {
-        console.log(`[PLAYER] เล่นสำเร็จ: ${url}`);
-      }).catch(err => {
-        console.error(`[PLAYER] เล่นล้มเหลว: ${url}`, err);
-      });
+// เพิ่มช่องจาก scraper.js
+async function loadChannels() {
+  try {
+    const resp = await fetch("/channels.json"); // จะสร้างจาก scraper.js
+    const channels = await resp.json();
+    channelSelect.innerHTML = "";
+    for (const ch of channels) {
+      const opt = document.createElement("option");
+      opt.value = ch.url;
+      opt.textContent = ch.name;
+      channelSelect.appendChild(opt);
     }
+  } catch (err) {
+    console.error("Load channels failed", err);
+  }
+}
 
-    playBtn.addEventListener("click", () => {
-      const url = channelSelect.value;
-      playChannel(url);
-    });
+function playChannel(url) {
+  const proxyUrl = `/proxy?url=${encodeURIComponent(url)}&ua=Mozilla/5.0&referer=${encodeURIComponent("https://dookeela2.live/")}`;
+  player.src = proxyUrl;
 
-    // เล่นช่องแรกอัตโนมัติ
-    window.addEventListener("load", () => {
-      playChannel(channelSelect.value);
-    });
+  console.log(`[PLAYER] กำลังเล่น: ${url}`);
+  player.play().then(() => console.log(`[PLAYER] เล่นสำเร็จ: ${url}`))
+               .catch(err => console.error(`[PLAYER] เล่นล้มเหลว: ${url}`, err));
+}
 
-    // เพิ่ม listener เพื่อตรวจว่า video error
-    player.addEventListener("error", (e) => {
-      console.error("[PLAYER] Video error", e);
-    });
-  </script>
+playBtn.addEventListener("click", () => {
+  const url = channelSelect.value;
+  if (url) playChannel(url);
+});
+
+// Autoplay ช่องแรก
+window.addEventListener("load", async () => {
+  await loadChannels();
+  if (channelSelect.value) playChannel(channelSelect.value);
+});
+
+player.addEventListener("error", e => console.error("[PLAYER] Video error", e));
+</script>
 </body>
 </html>
