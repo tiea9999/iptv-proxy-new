@@ -1,3 +1,4 @@
+
 import express from "express";
 import puppeteer from "puppeteer";
 
@@ -17,6 +18,7 @@ app.get("/proxy", async (req, res) => {
     const referer = req.query.referer || url;
 
     const browser = await puppeteer.launch({
+      executablePath: "/usr/bin/chromium-browser", // ใช้ Chromium ของ Render
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
 
@@ -26,7 +28,6 @@ app.get("/proxy", async (req, res) => {
 
     let targetM3U8 = null;
 
-    // intercept network response
     page.on("response", async (response) => {
       const requestUrl = response.url();
       if (requestUrl.endsWith(".m3u8")) {
@@ -41,17 +42,7 @@ app.get("/proxy", async (req, res) => {
     if (!targetM3U8) return res.status(404).send("No m3u8 found");
 
     // redirect client to real m3u8
-    res.redirect(targetM3U8);
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error fetching URL");
-  }
-});
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
-});
+    res.redirect(ta
 
 
 
