@@ -9,10 +9,10 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// serve index.html
+// Serve index.html
 app.use(express.static(__dirname));
 
-// proxy endpoint
+// Proxy endpoint
 app.get("/proxy", async (req, res) => {
   const url = req.query.url;
   if (!url) return res.status(400).send("Missing url parameter");
@@ -21,8 +21,8 @@ app.get("/proxy", async (req, res) => {
     const ua = req.query.ua || "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
     const referer = req.query.referer || url;
 
+    // Launch Puppeteer with default Chromium
     const browser = await puppeteer.launch({
-      executablePath: "/usr/bin/chromium-browser",
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
 
