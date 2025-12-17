@@ -2,10 +2,10 @@ import puppeteer from "puppeteer";
 import fs from "fs";
 
 const channels = [
-  { name: "HBO", url: "https://dookeela2.live/live-tv/hbo" },
-  { name: "Cinemax", url: "https://dookeela2.live/live-tv/cinemax" },
-  { name: "HBO Family", url: "https://dookeela2.live/live-tv/hbo-family" },
-  { name: "HBO Hits", url: "https://dookeela2.live/live-tv/hbo-hits" }
+  { name: "HBO", url: "https://lfbtv.com/doonunglive/channel/?code=bein1" },
+  { name: "Cinemax", url: "https://lfbtv.com/doonunglive/channel/?code=bein2" },
+  { name: "HBO Family", url: "https://lfbtv.com/doonunglive/channel/?code=bein3" },
+  { name: "HBO Hits", url: "https://lfbtv.com/doonunglive/channel/?code=monomax1" }
 ];
 
 async function fetchM3U8(ch) {
